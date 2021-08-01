@@ -7,9 +7,15 @@ class HangpersonGame
 
   # def initialize()
   # end
+
+  attr_accessor :word
+  attr_accessor :guesses
+  attr_accessor :wrong_guesses
   
   def initialize(word)
     @word = word
+    @guesses = ''
+    @wrong_guesses = ''
   end
 
   # You can test it by installing irb via $ gem install irb
@@ -23,6 +29,47 @@ class HangpersonGame
     Net::HTTP.new('randomword.saasbook.info').start { |http|
       return http.post(uri, "").body
     }
+  end
+
+  def guess(letter)
+    if letter == '' || letter == nil || /[^[a-zA-Z]]/.match(letter)
+      raise ArgumentError
+      return false
+    end
+    if @guesses.include?(letter) || @wrong_guesses.include?(letter) || /[[:upper:]]/.match(letter)
+      return false
+    end
+    if @word.include? letter
+      @guesses = @guesses + letter
+      return true
+    else
+      @wrong_guesses = @wrong_guesses + letter
+      return true
+    end
+  end
+
+  def word_with_guesses
+    @word_so_far = ''
+    @word.each_char do |letter|
+      if @guesses.include? letter
+        @word_so_far = @word_so_far + letter
+      else
+        @word_so_far = @word_so_far + '-'
+      end
+    end
+    return @word_so_far
+  end
+
+  def check_win_or_lose
+    if @wrong_guesses.length >= 7
+      return :lose
+    end
+    @word.each_char do |letter|
+      if !@guesses.include? letter
+        return :play
+      end
+    end
+    return :win
   end
 
 end
